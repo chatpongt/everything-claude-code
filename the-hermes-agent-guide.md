@@ -268,8 +268,14 @@ hermes model
 # 4. Connect your messaging platform
 hermes gateway setup
 
-# 5. Start the agent
-hermes start
+# 5. Start chatting
+hermes chat
+```
+
+You can also use the ECC quick-start script if you have both:
+
+```bash
+./scripts/quick-start.sh --all
 ```
 
 The first session will feel like any other AI chat. By the tenth session, you'll notice it finishing your sentences. By the fiftieth, it'll handle tasks you haven't explicitly taught it because it learned from the patterns in your previous requests.

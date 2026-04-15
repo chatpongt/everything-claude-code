@@ -112,46 +112,55 @@ gateways:
 ### Skill Management
 
 ```bash
-# List auto-generated skills
-hermes skill list
+# List installed skills
+hermes skills list
 
-# View a specific skill
-hermes skill show deploy-workflow
+# Install a skill from the built-in library
+hermes skills install <skill-name>
 
-# Manually create a skill
-hermes skill create "deploy-workflow" --description "Production deployment steps"
-
-# Delete a low-quality auto-generated skill
-hermes skill delete <skill-name>
+# Remove a skill
+hermes skills remove <skill-name>
 ```
 
 ### Running the Agent
 
 ```bash
-# Start in foreground
-hermes start
+# Start interactive chat
+hermes chat
 
-# Start as background daemon
-hermes start --daemon
+# Start with a specific session name
+hermes chat --continue my-project
+
+# Resume the last session
+hermes --continue
 
 # Check status
 hermes status
 
-# Stop the agent
-hermes stop
+# Run diagnostics
+hermes doctor
 
 # View logs
-hermes logs --tail 50
+hermes logs
 ```
 
-### Live Model Switching (v0.8.0)
+### Key CLI Commands
 
 ```bash
-# Switch model mid-session via chat command
-/model openrouter/anthropic/claude-sonnet-4-20250514
-
-# Or via CLI
-hermes model set ollama/llama3
+hermes chat             # Start interactive chat
+hermes model            # Configure LLM provider
+hermes gateway setup    # Connect messaging platforms
+hermes setup            # Full interactive setup wizard
+hermes status           # Check current configuration
+hermes doctor           # Run diagnostics
+hermes skills list      # View installed skills
+hermes memory           # Manage persistent memory
+hermes sessions         # View session history
+hermes tools            # Enable/disable tools
+hermes mcp              # Manage MCP servers
+hermes logs             # View structured logs
+hermes backup           # Backup agent data
+hermes config           # View/edit configuration
 ```
 
 ## Best Practices

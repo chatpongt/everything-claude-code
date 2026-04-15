@@ -104,11 +104,14 @@ Run verification checks:
 # Check all components
 hermes status
 
-# Test model connectivity with a simple prompt
-hermes chat "Hello, confirm you're working."
+# Run diagnostics
+hermes doctor
 
-# Verify skill system
-hermes skill list
+# Start a test chat
+hermes chat
+
+# View installed skills
+hermes skills list
 ```
 
 ## Output
@@ -118,21 +121,20 @@ Show the user a configuration summary:
 ```
 HERMES AGENT SETUP COMPLETE
 
-Version:    v0.8.0
-Provider:   openrouter (anthropic/claude-sonnet-4-20250514)
+Version:    v0.9.0
+Provider:   anthropic/claude-opus-4.6
 Memory:     enabled (SQLite FTS5)
-Skills:     auto-generation enabled
-Gateways:   telegram (connected)
+Skills:     26 categories installed
+Gateways:   none configured (add with: hermes gateway setup)
 
 Config:     ~/.hermes/config.yaml
 Skills dir: ~/.hermes/skills/
-Memory DB:  ~/.hermes/memory.db
 Logs:       ~/.hermes/logs/
 
 Next steps:
-  hermes start              # Start the agent
-  hermes gateway setup      # Add more messaging platforms
-  hermes skill list         # View auto-generated skills
+  hermes chat               # Start chatting with your agent
+  hermes gateway setup      # Connect Telegram/Discord/Slack
+  hermes skills list        # View installed skills
   hermes logs               # Monitor agent activity
 ```
 
