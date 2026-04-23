@@ -128,6 +128,11 @@
       "url": "http://localhost:18801/mcp",
       "description": "Multi-agent orchestration — dispatch parallel Claude Code agents in isolated worktrees. Plan projects, auto-chain missions, read structured reports. Repo: https://github.com/LEC-AI/claude-devfleet"
     },
+    "hermes-agent": {
+      "type": "http",
+      "url": "http://localhost:3100/mcp",
+      "description": "Hermes Agent by Nous Research — self-improving AI agent with persistent memory, skill auto-generation, and multi-provider LLM support. Cross-agent communication endpoint. Repo: https://github.com/NousResearch/hermes-agent"
+    },
     "token-optimizer": {
       "command": "npx",
       "args": ["-y", "token-optimizer-mcp"],

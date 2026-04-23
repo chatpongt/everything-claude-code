@@ -191,7 +191,7 @@ For manual install instructions see the README in the `rules/` folder.
 /plugin list everything-claude-code@everything-claude-code
 ```
 
-✨ **That's it!** You now have access to 25 agents, 108 skills, and 57 commands.
+✨ **That's it!** You now have access to 25 agents, 109 skills, and 58 commands.
 
 ---
 
@@ -1043,8 +1043,8 @@ The configuration is automatically detected from `.opencode/opencode.json`.
 | Feature | Claude Code | OpenCode | Status |
 |---------|-------------|----------|--------|
 | Agents | ✅ 25 agents | ✅ 12 agents | **Claude Code leads** |
-| Commands | ✅ 57 commands | ✅ 31 commands | **Claude Code leads** |
-| Skills | ✅ 108 skills | ✅ 37 skills | **Claude Code leads** |
+| Commands | ✅ 58 commands | ✅ 31 commands | **Claude Code leads** |
+| Skills | ✅ 109 skills | ✅ 37 skills | **Claude Code leads** |
 | Hooks | ✅ 8 event types | ✅ 11 events | **OpenCode has more!** |
 | Rules | ✅ 29 rules | ✅ 13 instructions | **Claude Code leads** |
 | MCP Servers | ✅ 14 servers | ✅ Full | **Full parity** |
