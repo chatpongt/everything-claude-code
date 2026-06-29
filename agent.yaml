@@ -79,6 +79,8 @@ skills:
   - healthcare-emr-patterns
   - healthcare-eval-harness
   - healthcare-phi-compliance
+  - hermes-agent-setup
+  - hermes-imports
   - inventory-demand-planning
   - investor-materials
   - investor-outreach
@@ -186,6 +188,7 @@ commands:
   - go-test
   - gradle-build
   - harness-audit
+  - hermes-setup
   - hookify
   - hookify-configure
   - hookify-help
