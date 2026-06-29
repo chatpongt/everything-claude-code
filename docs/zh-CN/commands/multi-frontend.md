@@ -2,6 +2,8 @@
 
 前端聚焦的工作流（研究 → 构思 → 规划 → 执行 → 优化 → 评审），由 Gemini 主导。
 
+> **前提条件：** 此命令需要外部的 `ccg-workflow` 运行时，它**不**包含在基础 ECC 安装中。请运行 `npx ccg-workflow` 进行初始化，以配置此命令所依赖的 `~/.claude/bin/codeagent-wrapper` 和 `~/.claude/.ccg/prompts/*` 角色文件。没有该运行时，此命令将无法正常运行。
+
 ## 使用方法
 
 ```bash
@@ -31,34 +33,34 @@
 **调用语法**:
 
 ```
-# New session call
+# 新会话调用
 Bash({
   command: "~/.claude/bin/codeagent-wrapper {{LITE_MODE_FLAG}}--backend gemini --gemini-model gemini-3-pro-preview - \"$PWD\" <<'EOF'
-ROLE_FILE: <role prompt path>
+ROLE_FILE: <角色提示文件路径>
 <TASK>
-Requirement: <enhanced requirement (or $ARGUMENTS if not enhanced)>
-Context: <project context and analysis from previous phases>
+需求: <增强后的需求（若未增强则为$ARGUMENTS）>
+上下文: <来自先前阶段的项目上下文与分析>
 </TASK>
-OUTPUT: Expected output format
+OUTPUT: 期望的输出格式
 EOF",
   run_in_background: false,
   timeout: 3600000,
-  description: "Brief description"
+  description: "简要描述"
 })
 
-# Resume session call
+# 恢复会话调用
 Bash({
   command: "~/.claude/bin/codeagent-wrapper {{LITE_MODE_FLAG}}--backend gemini --gemini-model gemini-3-pro-preview resume <SESSION_ID> - \"$PWD\" <<'EOF'
-ROLE_FILE: <role prompt path>
+ROLE_FILE: <角色提示文件路径>
 <TASK>
-Requirement: <enhanced requirement (or $ARGUMENTS if not enhanced)>
-Context: <project context and analysis from previous phases>
+需求: <增强后的需求（若未增强则为$ARGUMENTS）>
+上下文: <来自先前阶段的项目上下文与分析>
 </TASK>
-OUTPUT: Expected output format
+OUTPUT: 期望的输出格式
 EOF",
   run_in_background: false,
   timeout: 3600000,
-  description: "Brief description"
+  description: "简要描述"
 })
 ```
 

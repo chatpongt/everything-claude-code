@@ -36,6 +36,12 @@ function ensureString(value, fieldPath) {
   }
 }
 
+function ensureStringAllowEmpty(value, fieldPath) {
+  if (typeof value !== 'string') {
+    throw new Error(`Canonical session snapshot requires ${fieldPath} to be a string`);
+  }
+}
+
 function ensureOptionalString(value, fieldPath) {
   if (value !== null && value !== undefined && typeof value !== 'string') {
     throw new Error(`Canonical session snapshot requires ${fieldPath} to be a string or null`);
@@ -60,6 +66,35 @@ function ensureInteger(value, fieldPath) {
   }
 }
 
+const STALE_THRESHOLD_MS = 5 * 60 * 1000;
+
+function parseUpdatedMs(updated) {
+  if (typeof updated !== 'string' || updated.length === 0) return null;
+  const ms = Date.parse(updated);
+  return Number.isNaN(ms) ? null : ms;
+}
+
+function deriveWorkerHealth(rawWorker) {
+  const state = (rawWorker.status && rawWorker.status.state) || 'unknown';
+  const completedStates = ['completed', 'succeeded', 'success', 'done'];
+  const failedStates = ['failed', 'error'];
+
+  if (failedStates.includes(state)) return 'degraded';
+  if (completedStates.includes(state)) return 'healthy';
+
+  if (state === 'running' || state === 'active') {
+    const pane = rawWorker.pane;
+    if (pane && pane.dead) return 'degraded';
+
+    const updatedMs = parseUpdatedMs(rawWorker.status && rawWorker.status.updated);
+    if (updatedMs === null) return 'stale';
+    if (Date.now() - updatedMs > STALE_THRESHOLD_MS) return 'stale';
+    return 'healthy';
+  }
+
+  return 'unknown';
+}
+
 function buildAggregates(workers) {
   const states = workers.reduce((accumulator, worker) => {
     const state = worker.state || 'unknown';
@@ -67,9 +102,16 @@ function buildAggregates(workers) {
     return accumulator;
   }, {});
 
+  const healths = workers.reduce((accumulator, worker) => {
+    const health = worker.health || 'unknown';
+    accumulator[health] = (accumulator[health] || 0) + 1;
+    return accumulator;
+  }, {});
+
   return {
     workerCount: workers.length,
-    states
+    states,
+    healths
   };
 }
 
@@ -157,6 +199,7 @@ function validateCanonicalSnapshot(snapshot) {
     ensureString(worker.id, `workers[${index}].id`);
     ensureString(worker.label, `workers[${index}].label`);
     ensureString(worker.state, `workers[${index}].state`);
+    ensureString(worker.health, `workers[${index}].health`);
     ensureOptionalString(worker.branch, `workers[${index}].branch`);
     ensureOptionalString(worker.worktree, `workers[${index}].worktree`);
 
@@ -173,7 +216,7 @@ function validateCanonicalSnapshot(snapshot) {
       throw new Error(`Canonical session snapshot requires workers[${index}].intent to be an object`);
     }
 
-    ensureString(worker.intent.objective, `workers[${index}].intent.objective`);
+    ensureStringAllowEmpty(worker.intent.objective, `workers[${index}].intent.objective`);
     ensureArrayOfStrings(worker.intent.seedPaths, `workers[${index}].intent.seedPaths`);
 
     if (!isObject(worker.outputs)) {
@@ -202,9 +245,18 @@ function validateCanonicalSnapshot(snapshot) {
     throw new Error('Canonical session snapshot requires aggregates.states to be an object');
   }
 
+  if (!isObject(snapshot.aggregates.healths)) {
+    throw new Error('Canonical session snapshot requires aggregates.healths to be an object');
+  }
+
   for (const [state, count] of Object.entries(snapshot.aggregates.states)) {
     ensureString(state, 'aggregates.states key');
     ensureInteger(count, `aggregates.states.${state}`);
+  }
+
+  for (const [health, count] of Object.entries(snapshot.aggregates.healths)) {
+    ensureString(health, 'aggregates.healths key');
+    ensureInteger(count, `aggregates.healths.${health}`);
   }
 
   return snapshot;
@@ -376,6 +428,7 @@ function normalizeDmuxSnapshot(snapshot, sourceTarget) {
     id: worker.workerSlug,
     label: worker.workerSlug,
     state: worker.status.state || 'unknown',
+    health: deriveWorkerHealth(worker),
     branch: worker.status.branch || null,
     worktree: worker.status.worktree || null,
     runtime: {
@@ -431,6 +484,7 @@ function normalizeClaudeHistorySession(session, sourceTarget) {
     id: workerId,
     label: metadata.title || session.filename || workerId,
     state: 'recorded',
+    health: 'healthy',
     branch: metadata.branch || null,
     worktree: metadata.worktree || null,
     runtime: {
@@ -472,12 +526,119 @@ function normalizeClaudeHistorySession(session, sourceTarget) {
   });
 }
 
+function normalizeCodexWorktreeSession(session, sourceTarget) {
+  const state = session.active ? 'active' : 'recorded';
+  const objective = typeof session.objective === 'string' ? session.objective : '';
+  const worker = {
+    id: session.sessionId,
+    label: session.sessionId,
+    state,
+    health: 'healthy',
+    branch: session.branch || null,
+    worktree: session.cwd || null,
+    runtime: {
+      kind: 'codex-session',
+      command: 'codex',
+      pid: null,
+      active: Boolean(session.active),
+      dead: !session.active,
+    },
+    intent: {
+      objective,
+      seedPaths: []
+    },
+    outputs: {
+      summary: [],
+      validation: [],
+      remainingRisks: []
+    },
+    artifacts: {
+      sessionFile: session.sessionPath || null,
+      model: session.model || null,
+      originator: session.originator || null,
+      cliVersion: session.cliVersion || null,
+      startedAt: session.startedAt || null,
+      recordCount: Number.isInteger(session.recordCount) ? session.recordCount : null
+    }
+  };
+
+  return validateCanonicalSnapshot({
+    schemaVersion: SESSION_SCHEMA_VERSION,
+    adapterId: 'codex-worktree',
+    session: {
+      id: session.sessionId,
+      kind: 'codex-worktree',
+      state,
+      repoRoot: session.cwd || null,
+      sourceTarget
+    },
+    workers: [worker],
+    aggregates: buildAggregates([worker])
+  });
+}
+
+function normalizeOpencodeSession(session, sourceTarget) {
+  const state = session.active ? 'active' : 'recorded';
+  const objective = typeof session.objective === 'string' ? session.objective : '';
+  const worker = {
+    id: session.sessionId,
+    label: session.title || session.sessionId,
+    state,
+    health: 'healthy',
+    branch: session.branch || null,
+    worktree: session.cwd || null,
+    runtime: {
+      kind: 'opencode-session',
+      command: 'opencode',
+      pid: null,
+      active: Boolean(session.active),
+      dead: !session.active,
+    },
+    intent: {
+      objective,
+      seedPaths: []
+    },
+    outputs: {
+      summary: [],
+      validation: [],
+      remainingRisks: []
+    },
+    artifacts: {
+      sessionFile: session.sessionPath || null,
+      projectId: session.projectId || null,
+      version: session.version || null,
+      model: session.model || null,
+      provider: session.provider || null,
+      title: session.title || null,
+      createdAt: session.createdAt || null,
+      updatedAt: session.updatedAt || null,
+      messageCount: Number.isInteger(session.messageCount) ? session.messageCount : null
+    }
+  };
+
+  return validateCanonicalSnapshot({
+    schemaVersion: SESSION_SCHEMA_VERSION,
+    adapterId: 'opencode',
+    session: {
+      id: session.sessionId,
+      kind: 'opencode',
+      state,
+      repoRoot: session.cwd || null,
+      sourceTarget
+    },
+    workers: [worker],
+    aggregates: buildAggregates([worker])
+  });
+}
+
 module.exports = {
   SESSION_SCHEMA_VERSION,
   buildAggregates,
   getFallbackSessionRecordingPath,
   normalizeClaudeHistorySession,
+  normalizeCodexWorktreeSession,
   normalizeDmuxSnapshot,
+  normalizeOpencodeSession,
   persistCanonicalSnapshot,
   validateCanonicalSnapshot
 };

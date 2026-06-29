@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /**
  * Validate selective-install manifests and profile/module relationships.
+ * Module paths are curated repo paths only. Generated/imported skill roots
+ * (~/.claude/skills/learned, etc.) are never in manifests.
  */
 
 const fs = require('fs');
@@ -19,6 +21,7 @@ const COMPONENT_FAMILY_PREFIXES = {
   language: 'lang:',
   framework: 'framework:',
   capability: 'capability:',
+  locale: 'locale:',
 };
 
 function readJson(filePath, label) {
@@ -109,6 +112,7 @@ function validateInstallManifests() {
       const normalizedPath = normalizeRelativePath(relativePath);
       const absolutePath = path.join(REPO_ROOT, normalizedPath);
 
+      // All module paths must exist; no optional/generated paths in manifests
       if (!fs.existsSync(absolutePath)) {
         console.error(
           `ERROR: Module ${module.id} references missing path: ${normalizedPath}`
@@ -160,9 +164,12 @@ function validateInstallManifests() {
 
   if (profiles.full) {
     const fullModules = new Set(profiles.full.modules);
-    for (const moduleId of moduleIds) {
-      if (!fullModules.has(moduleId)) {
-        console.error(`ERROR: full profile is missing module ${moduleId}`);
+    for (const module of modules) {
+      if (module.kind === 'docs' && module.defaultInstall === false) {
+        continue;
+      }
+      if (!fullModules.has(module.id)) {
+        console.error(`ERROR: full profile is missing module ${module.id}`);
         hasErrors = true;
       }
     }

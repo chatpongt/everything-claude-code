@@ -1,6 +1,10 @@
+---
+description: 管理Claude Code会话历史、别名和会话元数据。
+---
+
 # Sessions 命令
 
-管理 Claude Code 会话历史 - 列出、加载、设置别名和编辑存储在 `~/.claude/sessions/` 中的会话。
+管理 Claude Code 会话历史 - 列出、加载、设置别名和编辑存储在 `~/.claude/session-data/` 中的会话，同时兼容读取旧的 `~/.claude/sessions/` 文件。
 
 ## 用法
 
@@ -26,8 +30,8 @@
 
 ```bash
 node -e "
-const sm = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-manager');
-const aa = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-aliases');
+const sm = require((()=>{var e=process.env.CLAUDE_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var p=require('path'),f=require('fs'),h=require('os').homedir(),d=p.join(h,'.claude'),q=p.join('scripts','lib','utils.js');if(f.existsSync(p.join(d,q)))return d;try{var b=p.join(d,'plugins','cache','everything-claude-code');for(var o of f.readdirSync(b))for(var v of f.readdirSync(p.join(b,o))){var c=p.join(b,o,v);if(f.existsSync(p.join(c,q)))return c}}catch(x){}return d})()+'/scripts/lib/session-manager');
+const aa = require((()=>{var e=process.env.CLAUDE_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var p=require('path'),f=require('fs'),h=require('os').homedir(),d=p.join(h,'.claude'),q=p.join('scripts','lib','utils.js');if(f.existsSync(p.join(d,q)))return d;try{var b=p.join(d,'plugins','cache','everything-claude-code');for(var o of f.readdirSync(b))for(var v of f.readdirSync(p.join(b,o))){var c=p.join(b,o,v);if(f.existsSync(p.join(c,q)))return c}}catch(x){}return d})()+'/scripts/lib/session-aliases');
 const path = require('path');
 
 const result = sm.getAllSessions({ limit: 20 });
@@ -68,8 +72,8 @@ for (const s of result.sessions) {
 
 ```bash
 node -e "
-const sm = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-manager');
-const aa = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-aliases');
+const sm = require((()=>{var e=process.env.CLAUDE_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var p=require('path'),f=require('fs'),h=require('os').homedir(),d=p.join(h,'.claude'),q=p.join('scripts','lib','utils.js');if(f.existsSync(p.join(d,q)))return d;try{var b=p.join(d,'plugins','cache','everything-claude-code');for(var o of f.readdirSync(b))for(var v of f.readdirSync(p.join(b,o))){var c=p.join(b,o,v);if(f.existsSync(p.join(c,q)))return c}}catch(x){}return d})()+'/scripts/lib/session-manager');
+const aa = require((()=>{var e=process.env.CLAUDE_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var p=require('path'),f=require('fs'),h=require('os').homedir(),d=p.join(h,'.claude'),q=p.join('scripts','lib','utils.js');if(f.existsSync(p.join(d,q)))return d;try{var b=p.join(d,'plugins','cache','everything-claude-code');for(var o of f.readdirSync(b))for(var v of f.readdirSync(p.join(b,o))){var c=p.join(b,o,v);if(f.existsSync(p.join(c,q)))return c}}catch(x){}return d})()+'/scripts/lib/session-aliases');
 const id = process.argv[1];
 
 // First try to resolve as alias
@@ -87,7 +91,7 @@ const size = sm.getSessionSize(session.sessionPath);
 const aliases = aa.getAliasesForSession(session.filename);
 
 console.log('Session: ' + session.filename);
-console.log('Path: ~/.claude/sessions/' + session.filename);
+console.log('Path: ' + session.sessionPath);
 console.log('');
 console.log('Statistics:');
 console.log('  Lines: ' + stats.lineCount);
@@ -142,8 +146,8 @@ if (session.metadata.worktree) {
 
 ```bash
 node -e "
-const sm = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-manager');
-const aa = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-aliases');
+const sm = require((()=>{var e=process.env.CLAUDE_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var p=require('path'),f=require('fs'),h=require('os').homedir(),d=p.join(h,'.claude'),q=p.join('scripts','lib','utils.js');if(f.existsSync(p.join(d,q)))return d;try{var b=p.join(d,'plugins','cache','everything-claude-code');for(var o of f.readdirSync(b))for(var v of f.readdirSync(p.join(b,o))){var c=p.join(b,o,v);if(f.existsSync(p.join(c,q)))return c}}catch(x){}return d})()+'/scripts/lib/session-manager');
+const aa = require((()=>{var e=process.env.CLAUDE_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var p=require('path'),f=require('fs'),h=require('os').homedir(),d=p.join(h,'.claude'),q=p.join('scripts','lib','utils.js');if(f.existsSync(p.join(d,q)))return d;try{var b=p.join(d,'plugins','cache','everything-claude-code');for(var o of f.readdirSync(b))for(var v of f.readdirSync(p.join(b,o))){var c=p.join(b,o,v);if(f.existsSync(p.join(c,q)))return c}}catch(x){}return d})()+'/scripts/lib/session-aliases');
 
 const sessionId = process.argv[1];
 const aliasName = process.argv[2];
@@ -183,7 +187,7 @@ if (result.success) {
 
 ```bash
 node -e "
-const aa = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-aliases');
+const aa = require((()=>{var e=process.env.CLAUDE_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var p=require('path'),f=require('fs'),h=require('os').homedir(),d=p.join(h,'.claude'),q=p.join('scripts','lib','utils.js');if(f.existsSync(p.join(d,q)))return d;try{var b=p.join(d,'plugins','cache','everything-claude-code');for(var o of f.readdirSync(b))for(var v of f.readdirSync(p.join(b,o))){var c=p.join(b,o,v);if(f.existsSync(p.join(c,q)))return c}}catch(x){}return d})()+'/scripts/lib/session-aliases');
 
 const aliasName = process.argv[1];
 if (!aliasName) {
@@ -213,8 +217,8 @@ if (result.success) {
 
 ```bash
 node -e "
-const sm = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-manager');
-const aa = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-aliases');
+const sm = require((()=>{var e=process.env.CLAUDE_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var p=require('path'),f=require('fs'),h=require('os').homedir(),d=p.join(h,'.claude'),q=p.join('scripts','lib','utils.js');if(f.existsSync(p.join(d,q)))return d;try{var b=p.join(d,'plugins','cache','everything-claude-code');for(var o of f.readdirSync(b))for(var v of f.readdirSync(p.join(b,o))){var c=p.join(b,o,v);if(f.existsSync(p.join(c,q)))return c}}catch(x){}return d})()+'/scripts/lib/session-manager');
+const aa = require((()=>{var e=process.env.CLAUDE_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var p=require('path'),f=require('fs'),h=require('os').homedir(),d=p.join(h,'.claude'),q=p.join('scripts','lib','utils.js');if(f.existsSync(p.join(d,q)))return d;try{var b=p.join(d,'plugins','cache','everything-claude-code');for(var o of f.readdirSync(b))for(var v of f.readdirSync(p.join(b,o))){var c=p.join(b,o,v);if(f.existsSync(p.join(c,q)))return c}}catch(x){}return d})()+'/scripts/lib/session-aliases');
 
 const id = process.argv[1];
 const resolved = aa.resolveAlias(id);
@@ -260,16 +264,11 @@ if (aliases.length > 0) {
 /sessions aliases                      # List all aliases
 ```
 
-## 操作员笔记
-
-* 会话文件在头部持久化 `Project`、`Branch` 和 `Worktree`，以便 `/sessions info` 可以区分并行 tmux/工作树运行。
-* 对于指挥中心式监控，请结合使用 `/sessions info`、`git diff --stat` 以及由 `scripts/hooks/cost-tracker.js` 发出的成本指标。
-
 **脚本：**
 
 ```bash
 node -e "
-const aa = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-aliases');
+const aa = require((()=>{var e=process.env.CLAUDE_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var p=require('path'),f=require('fs'),h=require('os').homedir(),d=p.join(h,'.claude'),q=p.join('scripts','lib','utils.js');if(f.existsSync(p.join(d,q)))return d;try{var b=p.join(d,'plugins','cache','everything-claude-code');for(var o of f.readdirSync(b))for(var v of f.readdirSync(p.join(b,o))){var c=p.join(b,o,v);if(f.existsSync(p.join(c,q)))return c}}catch(x){}return d})()+'/scripts/lib/session-aliases');
 
 const aliases = aa.listAliases();
 console.log('Session Aliases (' + aliases.length + '):');
@@ -289,6 +288,11 @@ if (aliases.length === 0) {
 }
 "
 ```
+
+## 操作员笔记
+
+* 会话文件在头部持久化 `Project`、`Branch` 和 `Worktree`，以便 `/sessions info` 可以区分并行 tmux/工作树运行。
+* 对于指挥中心式监控，请结合使用 `/sessions info`、`git diff --stat` 以及由 `scripts/hooks/cost-tracker.js` 发出的成本指标。
 
 ## 参数
 
@@ -330,7 +334,7 @@ $ARGUMENTS:
 
 ## 备注
 
-* 会话以 Markdown 文件形式存储在 `~/.claude/sessions/`
+* 会话以 Markdown 文件形式存储在 `~/.claude/session-data/`，并继续兼容读取旧的 `~/.claude/sessions/`
 * 别名存储在 `~/.claude/session-aliases.json`
 * 会话 ID 可以缩短（通常前 4-8 个字符就足够唯一）
 * 为经常引用的会话使用别名

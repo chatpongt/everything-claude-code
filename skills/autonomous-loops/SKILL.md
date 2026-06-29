@@ -1,7 +1,8 @@
 ---
 name: autonomous-loops
 description: "Patterns and architectures for autonomous Claude Code loops — from simple sequential pipelines to RFC-driven multi-agent DAG systems."
-origin: ECC
+metadata:
+  origin: ECC
 ---
 
 # Autonomous Loops Skill
@@ -235,9 +236,7 @@ Don't rely on agents to self-differentiate. The orchestrator **assigns** each ag
 
 ### Installation
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/AnandChowdhary/continuous-claude/HEAD/install.sh | bash
-```
+> **Warning:** Install continuous-claude from its repository after reviewing the code. Do not pipe external scripts directly to bash.
 
 ### Usage
 

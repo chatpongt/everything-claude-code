@@ -1,7 +1,8 @@
 ---
 name: rust-patterns
 description: Idiomatic Rust patterns, ownership, error handling, traits, concurrency, and best practices for building safe, performant applications.
-origin: ECC
+metadata:
+  origin: ECC
 ---
 
 # Rust Development Patterns
@@ -42,7 +43,6 @@ fn process_bad(data: &Vec<u8>) -> usize {
     cloned.len()
 }
 ```
-
 
 ### Use `Cow` for Flexible Ownership
 
